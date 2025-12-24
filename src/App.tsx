@@ -1,8 +1,8 @@
 import React from 'react';
-import STLViewer from './STLViewer';
+import RealViewer from './RealViewer';
 
 function App() {
-  return <STLViewer />;
+  return <RealViewer />;
 }
 
 export default App;

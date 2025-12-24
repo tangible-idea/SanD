@@ -1,4 +1,4 @@
-import React, { useState, Suspense, ErrorInfo } from 'react';
+import React, { useState, Suspense } from 'react';
 import { Canvas, useLoader } from '@react-three/fiber';
 import { OrbitControls, Environment } from '@react-three/drei';
 import { STLLoader } from 'three-stdlib';
@@ -39,7 +39,6 @@ function STLModelWithLoading({ url, color, onLoadStart, onLoadComplete, onError 
 
   React.useEffect(() => {
     if (geometry && meshRef.current) {
-      // Center the geometry
       geometry.computeBoundingBox();
       const bbox = geometry.boundingBox;
       if (bbox) {
@@ -47,7 +46,6 @@ function STLModelWithLoading({ url, color, onLoadStart, onLoadComplete, onError 
         bbox.getCenter(center);
         geometry.translate(-center.x, -center.y, -center.z);
 
-        // Calculate scale to fit in a reasonable view
         const size = new THREE.Vector3();
         bbox.getSize(size);
         const maxDim = Math.max(size.x, size.y, size.z);
@@ -56,7 +54,6 @@ function STLModelWithLoading({ url, color, onLoadStart, onLoadComplete, onError 
         meshRef.current.scale.set(scale, scale, scale);
       }
 
-      // Ensure normals are computed correctly
       geometry.computeVertexNormals();
     }
   }, [geometry]);
@@ -95,7 +92,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('STL viewer error:', error, errorInfo);
     this.props.onError('STL 파일 처리 중 오류가 발생했습니다.');
   }
@@ -162,7 +159,6 @@ export default function STLViewer() {
 
   return (
     <div style={{ width: '100%', height: '100vh', position: 'relative' }}>
-      {/* Color Selection Panel */}
       <div style={{
         position: 'absolute',
         top: '20px',
@@ -198,10 +194,8 @@ export default function STLViewer() {
         </div>
       </div>
 
-      {/* Loading Display */}
       {isLoading && <LoadingSpinner />}
 
-      {/* Error Display */}
       {error && (
         <div style={{
           position: 'absolute',
@@ -226,7 +220,6 @@ export default function STLViewer() {
         </div>
       )}
 
-      {/* 3D Canvas */}
       <Canvas
         shadows
         camera={{
