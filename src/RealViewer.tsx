@@ -84,12 +84,14 @@ function STLModel({ url, zThreshold, backText }: { url: string; zThreshold: numb
       {/* 뒷면에 텍스트 표시 */}
       {backText && modelSize && (
         <Text
-          position={[0, 0, -modelSize.z / 2 - 0.1]}
-          fontSize={0.2}
-          color="white"
+          position={[0, 0, -modelSize.z / 2 - 0.005]}
+          fontSize={0.3}
+          color="#cccccc"
           anchorX="center"
           anchorY="middle"
           rotation={[0, Math.PI, 0]}
+          depthOffset={-1}
+          material-toneMapped={false}
         >
           {backText}
         </Text>
@@ -131,8 +133,9 @@ function STLSection() {
           <input
             type="text"
             value={backText}
-            onChange={(e) => setBackText(e.target.value)}
-            placeholder="텍스트를 입력하세요"
+            onChange={(e) => setBackText(e.target.value.slice(0, 5))}
+            placeholder="최대 5글자"
+            maxLength={5}
             style={{
               width: '100%',
               padding: '8px',
@@ -165,7 +168,6 @@ function STLSection() {
         </Suspense>
 
         <OrbitControls />
-        <gridHelper args={[5, 5]} position={[0, -1, 0]} />
       </Canvas>
     </div>
   );
