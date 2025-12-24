@@ -1,17 +1,18 @@
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { Canvas, useLoader } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { STLLoader } from 'three-stdlib';
 import JSZip from 'jszip';
 import * as THREE from 'three';
 
-// STL 로더 컴포넌트
-function STLModel({ url }: { url: string }) {
+// STL 로더 컴포넌트 (Z축 높이별 색상)
+function STLModel({ url, zThreshold }: { url: string; zThreshold: number }) {
   const geometry = useLoader(STLLoader, url);
+  const meshRef = useRef<THREE.Mesh>(null);
 
+  // 지오메트리 초기 설정 (한 번만)
   useEffect(() => {
     if (geometry) {
-      // 지오메트리 중앙 정렬 및 크기 조정
       geometry.computeBoundingBox();
       const bbox = geometry.boundingBox;
       if (bbox) {
@@ -28,12 +29,48 @@ function STLModel({ url }: { url: string }) {
         }
       }
       geometry.computeVertexNormals();
+      geometry.computeBoundingBox(); // 스케일링 후 다시 계산
     }
   }, [geometry]);
 
+  // Z threshold가 변경될 때마다 색상 업데이트
+  useEffect(() => {
+    if (geometry && geometry.boundingBox) {
+      const positionAttribute = geometry.getAttribute('position');
+      const colors = [];
+
+      const bbox = geometry.boundingBox;
+      const minZ = bbox.min.z;
+      const maxZ = bbox.max.z;
+      const range = maxZ - minZ;
+      const actualZ = minZ + (range * zThreshold);
+
+      console.log(`STL Z range: ${minZ.toFixed(2)} to ${maxZ.toFixed(2)}, threshold at: ${actualZ.toFixed(2)} (${(zThreshold * 100).toFixed(0)}%)`);
+
+      for (let i = 0; i < positionAttribute.count; i++) {
+        const z = positionAttribute.getZ(i);
+
+        if (z > actualZ) {
+          // Z가 threshold보다 높으면 흰색
+          colors.push(1, 1, 1);
+        } else {
+          // Z가 threshold보다 낮으면 파란색
+          colors.push(0, 0.5, 1);
+        }
+      }
+
+      geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+      // 메시 업데이트 강제
+      if (meshRef.current) {
+        meshRef.current.geometry.attributes.color.needsUpdate = true;
+      }
+    }
+  }, [geometry, zThreshold]);
+
   return (
-    <mesh geometry={geometry}>
-      <meshStandardMaterial color="#e53935" roughness={0.3} metalness={0.1} />
+    <mesh ref={meshRef} geometry={geometry}>
+      <meshStandardMaterial vertexColors={true} roughness={0.3} metalness={0.1} />
     </mesh>
   );
 }
@@ -294,6 +331,7 @@ function ThreeMFModel({ url }: { url: string }) {
 
 function STLSection() {
   const [error, setError] = useState<string | null>(null);
+  const [zThreshold, setZThreshold] = useState(0.5); // 0.0~1.0 범위
 
   return (
     <div style={{
@@ -305,14 +343,42 @@ function STLSection() {
       <div style={{
         position: 'absolute',
         top: 10, left: 10, zIndex: 10,
-        background: 'rgba(255,255,255,0.9)',
-        padding: '10px',
-        borderRadius: '5px',
-        fontSize: '12px'
+        background: 'rgba(255,255,255,0.95)',
+        padding: '15px',
+        borderRadius: '8px',
+        fontSize: '12px',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+        minWidth: '200px'
       }}>
-        <h3>STL 뷰어</h3>
-        <p>linkedin.stl</p>
-        {error && <p style={{color: 'red'}}>에러: {error}</p>}
+        <h3 style={{margin: '0 0 10px 0'}}>STL 뷰어</h3>
+        <p style={{margin: '0 0 10px 0'}}>linkedin.stl</p>
+
+        <div style={{marginBottom: '10px'}}>
+          <label style={{display: 'block', marginBottom: '5px', fontSize: '11px'}}>
+            Z 높이 기준점: {(zThreshold * 100).toFixed(0)}%
+          </label>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={zThreshold}
+            onChange={(e) => setZThreshold(parseFloat(e.target.value))}
+            style={{
+              width: '100%',
+              height: '6px',
+              borderRadius: '3px',
+              background: 'linear-gradient(to right, #0080ff 0%, #ffffff 100%)',
+              outline: 'none',
+              cursor: 'pointer'
+            }}
+          />
+          <div style={{fontSize: '10px', color: '#666', marginTop: '2px'}}>
+            이 높이보다 위: 흰색 | 아래: 파란색
+          </div>
+        </div>
+
+        {error && <p style={{color: 'red', margin: '5px 0 0 0', fontSize: '11px'}}>에러: {error}</p>}
       </div>
 
       <Canvas camera={{ position: [3, 3, 3] }}>
@@ -326,7 +392,7 @@ function STLSection() {
             <meshStandardMaterial color="orange" />
           </mesh>
         }>
-          <STLModel url="/linkedin.stl" />
+          <STLModel url="/linkedin.stl" zThreshold={zThreshold} />
         </Suspense>
 
         <OrbitControls />
