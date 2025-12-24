@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { Canvas, useLoader } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls, Text } from '@react-three/drei';
 import { STLLoader } from 'three-stdlib';
 import * as THREE from 'three';
 
 // STL 로더 컴포넌트 (Z축 높이별 색상)
-function STLModel({ url, zThreshold }: { url: string; zThreshold: number }) {
+function STLModel({ url, zThreshold, backText }: { url: string; zThreshold: number; backText: string }) {
   const geometry = useLoader(STLLoader, url);
   const meshRef = useRef<THREE.Mesh>(null);
+  const [modelSize, setModelSize] = useState<THREE.Vector3 | null>(null);
 
   // 지오메트리 초기 설정 (한 번만)
   useEffect(() => {
@@ -29,6 +30,13 @@ function STLModel({ url, zThreshold }: { url: string; zThreshold: number }) {
       }
       geometry.computeVertexNormals();
       geometry.computeBoundingBox(); // 스케일링 후 다시 계산
+      
+      // 모델 크기 저장 (스케일링 후)
+      if (geometry.boundingBox) {
+        const scaledSize = new THREE.Vector3();
+        geometry.boundingBox.getSize(scaledSize);
+        setModelSize(scaledSize.clone());
+      }
     }
   }, [geometry]);
 
@@ -68,15 +76,32 @@ function STLModel({ url, zThreshold }: { url: string; zThreshold: number }) {
   }, [geometry, zThreshold]);
 
   return (
-    <mesh ref={meshRef} geometry={geometry}>
-      <meshStandardMaterial vertexColors={true} roughness={0.3} metalness={0.1} />
-    </mesh>
+    <>
+      <mesh ref={meshRef} geometry={geometry}>
+        <meshStandardMaterial vertexColors={true} roughness={0.3} metalness={0.1} />
+      </mesh>
+      
+      {/* 뒷면에 텍스트 표시 */}
+      {backText && modelSize && (
+        <Text
+          position={[0, 0, -modelSize.z / 2 - 0.1]}
+          fontSize={0.2}
+          color="white"
+          anchorX="center"
+          anchorY="middle"
+          rotation={[0, Math.PI, 0]}
+        >
+          {backText}
+        </Text>
+      )}
+    </>
   );
 }
 
 // STL 섹션 컴포넌트
 function STLSection() {
   const [error, setError] = useState<string | null>(null);
+  const [backText, setBackText] = useState('');
   const zThreshold = 0.75; // 75% 고정
 
   return (
@@ -96,15 +121,29 @@ function STLSection() {
         minWidth: '200px',
         maxWidth: '90vw'
       }}>
-        <h3 style={{margin: '0 0 10px 0', fontSize: '14px'}}>STL 뷰어</h3>
-        <p style={{margin: '0 0 10px 0', fontSize: '12px'}}>linkedin.stl</p>
+
+        <p style={{margin: '0 0 10px 0', fontSize: '12px'}}>linkedin NFC 악세서리 미리보기</p>
 
         <div style={{marginBottom: '10px'}}>
           <label style={{display: 'block', marginBottom: '5px', fontSize: '11px'}}>
-            Z 높이 기준점: 75%
+            뒷면 텍스트:
           </label>
+          <input
+            type="text"
+            value={backText}
+            onChange={(e) => setBackText(e.target.value)}
+            placeholder="텍스트를 입력하세요"
+            style={{
+              width: '100%',
+              padding: '8px',
+              fontSize: '12px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              boxSizing: 'border-box'
+            }}
+          />
           <div style={{fontSize: '10px', color: '#666', marginTop: '2px'}}>
-            이 높이보다 위: 흰색 | 아래: 파란색
+            입력한 텍스트가 모델 뒷면에 흰색으로 표시됩니다
           </div>
         </div>
 
@@ -122,7 +161,7 @@ function STLSection() {
             <meshStandardMaterial color="orange" />
           </mesh>
         }>
-          <STLModel url="/linkedin.stl" zThreshold={zThreshold} />
+          <STLModel url="/linkedin.stl" zThreshold={zThreshold} backText={backText} />
         </Suspense>
 
         <OrbitControls />
