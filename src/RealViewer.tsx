@@ -114,46 +114,52 @@ function STLSection() {
     }}>
       <div style={{
         position: 'absolute',
-        top: 10, left: 10, zIndex: 10,
-        background: 'rgba(255,255,255,0.95)',
-        padding: '15px',
-        borderRadius: '8px',
-        fontSize: '12px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-        minWidth: '200px',
-        maxWidth: '90vw'
+        bottom: 0, left: 0, right: 0, zIndex: 10,
+        background: 'rgba(255,255,255,0.98)',
+        padding: '20px',
+        borderRadius: '20px 20px 0 0',
+        fontSize: '14px',
+        boxShadow: '0 -4px 20px rgba(0,0,0,0.15)',
+        borderTop: '1px solid #e0e0e0'
       }}>
 
-        <p style={{margin: '0 0 10px 0', fontSize: '12px'}}>linkedin NFC 악세서리 미리보기</p>
+        <p style={{margin: '0 0 15px 0', fontSize: '16px', fontWeight: '600'}}>LinkedIn NFC 악세서리 미리보기</p>
 
-        <div style={{marginBottom: '10px'}}>
-          <label style={{display: 'block', marginBottom: '5px', fontSize: '11px'}}>
-            뒷면 텍스트:
+        <div style={{marginBottom: '15px'}}>
+          <label style={{display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500'}}>
+            뒷면 텍스트 (최대 5글자):
           </label>
           <input
             type="text"
             value={backText}
             onChange={(e) => setBackText(e.target.value.slice(0, 5))}
-            placeholder="최대 5글자"
+            placeholder="텍스트를 입력하세요"
             maxLength={5}
             style={{
               width: '100%',
-              padding: '8px',
-              fontSize: '12px',
-              border: '1px solid #ddd',
-              borderRadius: '4px',
-              boxSizing: 'border-box'
+              padding: '12px 16px',
+              fontSize: '16px',
+              border: '2px solid #e0e0e0',
+              borderRadius: '12px',
+              boxSizing: 'border-box',
+              outline: 'none',
+              transition: 'border-color 0.2s'
             }}
+            onFocus={(e) => e.target.style.borderColor = '#007acc'}
+            onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
           />
-          <div style={{fontSize: '10px', color: '#666', marginTop: '2px'}}>
-            입력한 텍스트가 모델 뒷면에 흰색으로 표시됩니다
+          <div style={{fontSize: '12px', color: '#666', marginTop: '8px'}}>
+            입력한 텍스트가 모델 뒷면에 표시됩니다
           </div>
         </div>
 
-        {error && <p style={{color: 'red', margin: '5px 0 0 0', fontSize: '11px'}}>에러: {error}</p>}
+        {error && <p style={{color: '#d32f2f', margin: '10px 0 0 0', fontSize: '14px', padding: '10px', background: '#ffebee', borderRadius: '8px'}}>에러: {error}</p>}
       </div>
 
-      <Canvas camera={{ position: [3, 3, 3] }}>
+      <Canvas 
+        camera={{ position: [3, 3, 3] }}
+        style={{ touchAction: 'none' }}
+      >
         <ambientLight intensity={0.4} />
         <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
         <pointLight position={[-10, -10, -10]} intensity={0.3} />
@@ -167,7 +173,15 @@ function STLSection() {
           <STLModel url="/linkedin.stl" zThreshold={zThreshold} backText={backText} />
         </Suspense>
 
-        <OrbitControls />
+        <OrbitControls 
+          enableDamping
+          dampingFactor={0.05}
+          enablePan={true}
+          enableZoom={true}
+          enableRotate={true}
+          minDistance={2}
+          maxDistance={10}
+        />
       </Canvas>
     </div>
   );
