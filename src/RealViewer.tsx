@@ -89,7 +89,7 @@ function STLModel({ url, zThreshold, backText, color }: { url: string; zThreshol
   }, [geometry, zThreshold, color]);
 
   return (
-    <group position={[0, 0.5, 0]}>
+    <group position={[0, 1.75, 0]}>
       <mesh ref={meshRef} geometry={geometry}>
         <meshStandardMaterial
           vertexColors={true}
@@ -223,11 +223,11 @@ function STLSection() {
           <div style={{display: 'flex', gap: '8px', flexWrap: 'wrap'}}>
             {(['blue', 'red', 'pink', 'black', 'gold'] as ColorType[]).map((colorOption) => {
               const colorNames: Record<ColorType, string> = {
-                blue: '파란색',
-                red: '빨간색',
-                pink: '핑크색',
-                black: '검정색',
-                gold: '황금색'
+                blue: 'Blue',
+                red: 'Red',
+                pink: 'Pink',
+                black: 'Black',
+                gold: 'Gold'
               };
               const colorHex: Record<ColorType, string> = {
                 blue: '#0080ff',
