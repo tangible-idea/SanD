@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="nfcGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#007acc;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0096ff;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="48" fill="url(#nfcGradient)" stroke="#005a99" stroke-width="2"/>
+
+  <!-- NFC waves -->
+  <path d="M 30 50 Q 30 30, 50 30" fill="none" stroke="white" stroke-width="4" stroke-linecap="round"/>
+  <path d="M 25 50 Q 25 20, 50 20" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+  <path d="M 20 50 Q 20 10, 50 10" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+
+  <path d="M 70 50 Q 70 70, 50 70" fill="none" stroke="white" stroke-width="4" stroke-linecap="round"/>
+  <path d="M 75 50 Q 75 80, 50 80" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+  <path d="M 80 50 Q 80 90, 50 90" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+
+  <!-- Center dot -->
+  <circle cx="50" cy="50" r="6" fill="white"/>
+</svg>
